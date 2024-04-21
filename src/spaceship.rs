@@ -4,6 +4,7 @@ use crate::{
     asset_loader::SceneAssets,
     collision_detection::Collider,
     movement::{Acceleration, MovingObjectBundle, Velocity},
+    schedule::InGameSet,
 };
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0, 0.0, -20.0);
@@ -19,15 +20,25 @@ const MISSILE_RADIUS: f32 = 1.0;
 pub struct Spaceship;
 
 #[derive(Component, Debug)]
+pub struct SpaceshipShield;
+
+#[derive(Component, Debug)]
 pub struct SpaceshipMissile;
 
 pub struct SpaceshipPlugin;
 
 impl Plugin for SpaceshipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, spawn_spaceship)
-            .add_systems(Update, spaceship_movement_controls)
-            .add_systems(Update, spaceship_weapon_controls);
+        app.add_systems(PostStartup, spawn_spaceship).add_systems(
+            Update,
+            (
+                spaceship_movement_controls,
+                spaceship_weapon_controls,
+                spaceship_shield_controls,
+            )
+                .chain()
+                .in_set(InGameSet::UserInput),
+        );
     }
 }
 
@@ -52,7 +63,9 @@ fn spaceship_movement_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    let (mut transform, mut velocity) = query.single_mut();
+    let Ok((mut transform, mut velocity)) = query.get_single_mut() else {
+        return;
+    };
     let mut rotation = 0.0;
     let mut roll = 0.0;
     let mut movement = 0.0;
@@ -93,7 +106,9 @@ fn spaceship_weapon_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     scene_assets: Res<SceneAssets>,
 ) {
-    let transform = query.single();
+    let Ok(transform) = query.get_single() else {
+        return;
+    };
 
     if keyboard_input.pressed(KeyCode::Space) {
         commands.spawn((
@@ -112,5 +127,19 @@ fn spaceship_weapon_controls(
             },
             SpaceshipMissile,
         ));
+    }
+}
+
+fn spaceship_shield_controls(
+    mut commands: Commands,
+    query: Query<Entity, With<Spaceship>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+) {
+    let Ok(spaceship) = query.get_single() else {
+        return;
+    };
+
+    if keyboard_input.pressed(KeyCode::KeyE) {
+        commands.entity(spaceship).insert(SpaceshipShield);
     }
 }
