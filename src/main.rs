@@ -4,9 +4,11 @@ mod camera;
 mod collision_detection;
 mod debug;
 mod despawn;
+mod health;
 mod movement;
 mod schedule;
 mod spaceship;
+mod state;
 
 use bevy::prelude::*;
 
@@ -28,6 +30,7 @@ fn main() {
         .add_plugins(despawn::DespawnPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(schedule::SchedulePlugin)
+        .add_plugins(state::StatePlugin)
         // .add_plugins(debug::DebugPlugin)
         .run();
 }
