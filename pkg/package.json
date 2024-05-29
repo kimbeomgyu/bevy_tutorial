@@ -1,0 +1,14 @@
+{
+  "name": "spaceship_game",
+  "version": "0.1.0",
+  "files": [
+    "spaceship_game_bg.wasm",
+    "spaceship_game.js",
+    "spaceship_game.d.ts"
+  ],
+  "module": "spaceship_game.js",
+  "types": "spaceship_game.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
